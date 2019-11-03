@@ -33,3 +33,14 @@ output/
 # Allow for gitignore files and the LICENSE
 !.gitignore
 !/LICENSE
+
+# IDE
+.idea/
+.DS_Store
+cmake-build-*/
+
+# CMake
+!CMakeLists.txt
+
+# make
+.cache.mk
