@@ -20,6 +20,7 @@ project(xilinx_axidma)
 # driver
 if(xilinx_axidma_BUILD_DRIVER)
     add_subdirectory(driver)
+    add_subdirectory(driver_adc_ctrl)
 endif()
 
 # library
