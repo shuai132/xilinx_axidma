@@ -47,3 +47,8 @@ cmake-build-*/
 
 # doc
 !/doc/*
+
+# src
+!*.cpp
+!*.cc
+!*.hpp
