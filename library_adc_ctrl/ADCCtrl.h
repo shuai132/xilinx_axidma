@@ -9,12 +9,10 @@ public:
     ~ADCCtrl();
 
 public:
-    void init(uint32_t sampleNum);
-
-    void start();
+    void start(uint32_t sampleNum);
 
 private:
-    const char* ADC_DMA_DEV = "/dev/adc_ctrl";
+    const char* ADC_DMA_DEV = "/dev/adc0";
 
     int fd_ = -1;
 };

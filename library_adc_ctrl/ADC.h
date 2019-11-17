@@ -29,7 +29,8 @@ private:
     void errorIf(bool error, const std::string& errorMsg = "ADC error");
 
 private:
-    uint32_t rxSize_ = 128;
+    uint32_t SAMPLE_NUM = 32;
+    uint32_t rxSize_ = SAMPLE_NUM * 4 * 2;
 
     int rxChannel_ = -1;
     axidma_dev_t axidmaDev_ = nullptr;
