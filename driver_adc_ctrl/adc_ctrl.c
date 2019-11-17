@@ -5,12 +5,16 @@
 #include <linux/fs.h>
 
 #include "adc_ctrl.h"
+#include "adc_ctrl_def.h"
 
 MODULE_LICENSE("GPL");
 MODULE_VERSION("0.1");
 MODULE_AUTHOR("liushuai");
 
 #define DEVICE_NAME "adc_ctrl"
+
+#define SUCCESS             0
+#define FAILURE             -1
 
 static int on_open(struct inode *inode, struct file *file) {
     LOGI();
@@ -23,8 +27,16 @@ static int on_close(struct inode *inode, struct file *file) {
 }
 
 static long on_ioctl(struct file *file, unsigned int cmd, unsigned long arg) {
-    LOGI("cmd: %u", cmd);
-    return -EMSGSIZE;
+    LOGI("cmd: %u, arg: %lu", cmd, arg);
+    switch (cmd) {
+        case AXI_ADC_SET_SAMPLE_NUM:
+            break;
+        case AXI_ADC_ADC_START:
+            break;
+        default:
+            return -EOPNOTSUPP;
+    }
+    return SUCCESS;
 }
 
 static struct file_operations adc_ctrl_fops = {

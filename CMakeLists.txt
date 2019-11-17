@@ -13,9 +13,13 @@ option(xilinx_axidma_STATIC_BUILD   "library type"  OFF)
 if(xilinx_axidma_CROSS_ARM)
     set(CMAKE_SYSTEM_NAME       Linux)
     set(CMAKE_SYSTEM_PROCESSOR  arm)
+
+    set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
 endif()
 
 project(xilinx_axidma)
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/outputs)
 
 # driver
 if(xilinx_axidma_BUILD_DRIVER)
@@ -33,12 +37,17 @@ target_include_directories(axidma PUBLIC include)
 
 # example
 if(xilinx_axidma_BUILD_EXAMPLE)
+    link_libraries(axidma)
+
     set(UTILS ./examples/util.c)
     add_executable(axidma_benchmark     ./examples/axidma_benchmark.c       ${UTILS})
     add_executable(axidma_display_image ./examples/axidma_display_image.c   ${UTILS})
     add_executable(axidma_transfer      ./examples/axidma_transfer.c        ${UTILS})
 
-    target_link_libraries(axidma_benchmark      axidma)
-    target_link_libraries(axidma_display_image  axidma)
-    target_link_libraries(axidma_transfer       axidma)
+    add_executable(test_receive         ./examples/test_receive.cpp         ${UTILS})
+
+    add_subdirectory(library_adc_ctrl)
 endif()
+
+add_subdirectory(others/adc_capture_driver)
+add_subdirectory(others/adc_capture_app)
