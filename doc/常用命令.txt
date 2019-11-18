@@ -8,9 +8,6 @@ insmod axidma.ko
 insmod adc_ctrl.ko
 ./example_adc_ctrl
 
-../cmake-build-debug-arm/test_receive
-../cmake-build-debug-arm/library_adc_ctrl/example_adc
-
 rmmod axidma.ko
 
 # uboot
@@ -18,7 +15,7 @@ setenv bootargs cma=256M
 
 # NFS
 # 修改配置
-sudo gedit /etc/exports ]]
+sudo gedit /etc/exports
 添加目录例子，注意要使用绝对目录：
 /home/parallels/nfs *(rw,sync,no_root_squash,insecure,no_subtree_check)
 # 重启服务
