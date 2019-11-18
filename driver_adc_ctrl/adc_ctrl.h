@@ -3,8 +3,8 @@
 
 #define MODULE_NAME                     "adc_ctrl"
 
-#define AXI_ADC_MINOR_START             0
-#define AXI_ADC_MINOR_COUNT             16
+#define ADC_MINOR_START                 0
+#define ADC_MINOR_COUNT                 16
 #define SUCCESS                         0
 #define FAILURE                         -1
 

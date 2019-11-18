@@ -20,12 +20,12 @@ ADCCtrl::~ADCCtrl() {
 }
 
 void ADCCtrl::start(uint32_t sampleNum) {
-    if (ioctl(fd_, AXI_ADC_SET_SAMPLE_NUM, sampleNum)) {
+    if (ioctl(fd_, ADC_SET_SAMPLE_NUM, sampleNum)) {
         LOGE("AXI_ADC_SET_SAMPLE_NUM failed: %s", strerror(errno));
         throw_exception();
     }
 
-    if (ioctl(fd_, AXI_ADC_ADC_START) != 0) {
+    if (ioctl(fd_, ADC_START) != 0) {
         LOGE("AXI_ADC_DMA_START failed: %s", strerror(errno));
         throw_exception();
     }

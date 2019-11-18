@@ -1,4 +1,3 @@
-#include <termios.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <sys/ioctl.h>

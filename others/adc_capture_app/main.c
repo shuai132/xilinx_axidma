@@ -35,6 +35,6 @@ int main(int argc, char *argv[])
         }
         printf("\n");
 
-        usleep(1000 * 100);
+        usleep(1000 * 1000);
     }
 }
