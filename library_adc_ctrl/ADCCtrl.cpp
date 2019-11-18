@@ -7,6 +7,8 @@
 #include "adc_ctrl_def.h"
 #include "log.h"
 
+namespace adc {
+
 ADCCtrl::ADCCtrl() {
     fd_ = open(ADC_DMA_DEV, O_RDONLY);
     if (fd_ < 0) {
@@ -16,7 +18,7 @@ ADCCtrl::ADCCtrl() {
 }
 
 ADCCtrl::~ADCCtrl() {
-    if(fd_) close(fd_);
+    if (fd_) close(fd_);
 }
 
 void ADCCtrl::start(uint32_t sampleNum) {
@@ -29,4 +31,6 @@ void ADCCtrl::start(uint32_t sampleNum) {
         LOGE("AXI_ADC_DMA_START failed: %s", strerror(errno));
         throw_exception();
     }
+}
+
 }

@@ -16,7 +16,7 @@ static void printData(uint8_t* data, uint32_t size){
 int main() {
     LOGI("main...");
 
-    ADC adc;
+    adc::ADC adc;
 
     LOGI("同步模式...");
     uint8_t* data;

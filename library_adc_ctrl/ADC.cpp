@@ -6,6 +6,8 @@
 #include "Exception.h"
 #include "log.h"
 
+namespace adc {
+
 ADC::ADC() {
     initAdc();
 }
@@ -80,8 +82,10 @@ void ADC::axidma_callback(int channel_id, void *user_data) {
     LOGD("axidma_callback: channel_id:%d, user_data:%p", channel_id, user_data);
     auto adc = reinterpret_cast<ADC*>(user_data);
 
-    auto& handle = adc->getDataHandle();
+    auto& handle = adc->onDataHandle_;
     if (handle) {
         handle(adc->rxBuf_, adc->rxSize_);
     }
+}
+
 }

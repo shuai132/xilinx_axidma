@@ -8,7 +8,9 @@ extern "C" {
 #include "libaxidma.h"
 }
 
-class ADC : app::noncopyable, public IADC {
+namespace adc {
+
+class ADC : noncopyable, public IADC {
 public:
     ADC();
 
@@ -40,3 +42,5 @@ private:
 
     bool initOk_ = false;
 };
+
+}

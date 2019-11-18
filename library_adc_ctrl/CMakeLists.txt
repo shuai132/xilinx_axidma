@@ -4,7 +4,7 @@ add_library(${TARGET_NAME} STATIC
         ADC.cpp
         ADCCtrl.cpp
         )
-target_include_directories(${TARGET_NAME} PUBLIC ../driver_adc_ctrl)
+target_include_directories(${TARGET_NAME} PUBLIC ../driver_adc_ctrl ../include .)
 
 add_executable(example_adc_ctrl main.cpp)
 target_link_libraries(example_adc_ctrl

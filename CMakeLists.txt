@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.1)
 
 # driver: if ON, you should set kernel dir, eg: set(xilinx_axidma_KERNEL_DIR "")
 option(xilinx_axidma_BUILD_DRIVER   "build driver"  ON)
@@ -19,6 +19,9 @@ endif()
 
 project(xilinx_axidma)
 
+set(CMAKE_CXX_STANDARD 11)
+add_compile_options(-Wall)
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/outputs)
 
 # driver
@@ -35,19 +38,19 @@ else()
 endif()
 target_include_directories(axidma PUBLIC include)
 
+link_libraries(axidma)
+
 # example
 if(xilinx_axidma_BUILD_EXAMPLE)
-    link_libraries(axidma)
-
     set(UTILS ./examples/util.c)
     add_executable(axidma_benchmark     ./examples/axidma_benchmark.c       ${UTILS})
     add_executable(axidma_display_image ./examples/axidma_display_image.c   ${UTILS})
     add_executable(axidma_transfer      ./examples/axidma_transfer.c        ${UTILS})
 
     add_executable(test_receive         ./examples/test_receive.cpp         ${UTILS})
-
-    add_subdirectory(library_adc_ctrl)
 endif()
+
+add_subdirectory(library_adc_ctrl)
 
 add_subdirectory(others/adc_capture_driver)
 add_subdirectory(others/adc_capture_app)

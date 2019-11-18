@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+namespace adc {
+
 class ADCCtrl {
 public:
     ADCCtrl();
@@ -16,3 +18,5 @@ private:
 
     int fd_ = -1;
 };
+
+}

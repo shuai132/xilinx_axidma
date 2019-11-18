@@ -2,6 +2,8 @@
 
 #include <functional>
 
+namespace adc {
+
 class IADC {
     using OnDataHandle = std::function<void(uint8_t* data, size_t size)>;
 
@@ -17,10 +19,8 @@ public:
         onDataHandle_ = handle;
     }
 
-    const OnDataHandle& getDataHandle() {
-        return onDataHandle_;
-    }
-
 protected:
     OnDataHandle onDataHandle_;
 };
+
+}

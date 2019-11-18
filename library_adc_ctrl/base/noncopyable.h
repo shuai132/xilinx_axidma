@@ -1,6 +1,6 @@
 #pragma once
 
-namespace app {
+namespace adc {
 
 class noncopyable
 {
