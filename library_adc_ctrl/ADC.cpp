@@ -1,6 +1,8 @@
 /**
  * 对于硬件来讲 会有较多的异常
  */
+#include <cassert>
+
 #include "ADC.h"
 #include "ADCCtrl.h"
 #include "Exception.h"
@@ -8,14 +10,17 @@
 
 namespace adc {
 
-ADC::ADC() {
+ADC::ADC(uint32_t sampleNum)
+    : IADC(sampleNum) {
     initAdc();
 }
 
 void ADC::capture(uint8_t*& data, size_t& size) {
+    assert(sampleNum_ != 0);
+
     LOGD("capture...");
     initAdc();
-    adcCtrl_.start(SAMPLE_NUM);
+    adcCtrl_.start(sampleNum_);
     int rc = axidma_oneway_transfer(axidmaDev_, rxChannel_, rxBuf_, rxSize_, true);
 
     errorIf(rc < 0);
@@ -26,15 +31,19 @@ void ADC::capture(uint8_t*& data, size_t& size) {
 }
 
 void ADC::captureAsync() {
+    assert(sampleNum_ != 0);
+
     LOGD("captureAsync...");
     initAdc();
-    adcCtrl_.start(SAMPLE_NUM);
+    adcCtrl_.start(sampleNum_);
     int rc = axidma_oneway_transfer(axidmaDev_, rxChannel_, rxBuf_, rxSize_, false);
     errorIf(rc < 0);
 }
 
 ADC::~ADC() {
-    axidma_stop_transfer(axidmaDev_, rxChannel_);
+    if (axidmaDev_) {
+        axidma_stop_transfer(axidmaDev_, rxChannel_);
+    }
     freeRes();
 }
 
@@ -46,6 +55,7 @@ void ADC::initAdc(bool force) {
     axidmaDev_ = axidma_init();
     errorIf(axidmaDev_ == nullptr, "Failed to initialize the AXI DMA device");
 
+    updateRxSize();
     rxBuf_ = reinterpret_cast<uint8_t*>(axidma_malloc(axidmaDev_, rxSize_));
     errorIf(rxBuf_ == nullptr, "Unable to allocate receive buffer from the AXI DMA device");
 
@@ -78,7 +88,7 @@ void ADC::errorIf(bool error, const std::string& errorMsg) {
     throw_if(error, std::bind(&ADC::freeRes, this));
 }
 
-void ADC::axidma_callback(int channel_id, void *user_data) {
+void ADC::axidma_callback(int channel_id, void* user_data) {
     LOGD("axidma_callback: channel_id:%d, user_data:%p", channel_id, user_data);
     auto adc = reinterpret_cast<ADC*>(user_data);
 
@@ -86,6 +96,16 @@ void ADC::axidma_callback(int channel_id, void *user_data) {
     if (handle) {
         handle(adc->rxBuf_, adc->rxSize_);
     }
+}
+
+void ADC::setSampleNum(uint32_t sampleNum) {
+    IADC::setSampleNum(sampleNum);
+    updateRxSize();
+    initAdc(true);
+}
+
+void ADC::updateRxSize() {
+    rxSize_ = sampleNum_ * 4 * 2;
 }
 
 }

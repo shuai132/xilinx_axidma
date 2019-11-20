@@ -12,7 +12,7 @@ namespace adc {
 
 class ADC : noncopyable, public IADC {
 public:
-    ADC();
+    explicit ADC(uint32_t sampleNum = 1);
 
     ~ADC() override;
 
@@ -21,8 +21,10 @@ public:
 
     void captureAsync() override;
 
+    void setSampleNum(uint32_t sampleNum) override;
+
 private:
-    static void axidma_callback(int channel_id, void *user_data);
+    static void axidma_callback(int channel_id, void* user_data);
 
     void initAdc(bool force = false);
 
@@ -30,9 +32,10 @@ private:
 
     void errorIf(bool error, const std::string& errorMsg = "ADC error");
 
+    void updateRxSize();
+
 private:
-    uint32_t SAMPLE_NUM = 32;
-    uint32_t rxSize_ = SAMPLE_NUM * 4 * 2;
+    uint32_t rxSize_ = 0;
 
     int rxChannel_ = -1;
     axidma_dev_t axidmaDev_ = nullptr;
