@@ -1,12 +1,13 @@
 # 运行测试
 mkdir xilinx_axidma
-mount -t nfs -o nolock 192.168.1.5:/home/parallels/github/xilinx_axidma xilinx_axidma
+mount -t nfs -o nolock 192.168.2.101:/home/parallels/github/xilinx_axidma xilinx_axidma
 cd xilinx_axidma && export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:.
 
 cd outputs
 insmod axidma.ko
 insmod adc_ctrl.ko
-./example_adc_ctrl
+cd arm-Debug
+./app
 
 rmmod axidma.ko
 
