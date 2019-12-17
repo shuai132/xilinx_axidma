@@ -40,6 +40,9 @@ target_include_directories(axidma PUBLIC include)
 
 link_libraries(axidma)
 
+# log
+include_directories(modules/log)
+
 # example
 if(xilinx_axidma_BUILD_EXAMPLE)
     set(UTILS ./examples/util.c)
