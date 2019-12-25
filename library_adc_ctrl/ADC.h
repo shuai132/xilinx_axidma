@@ -17,7 +17,7 @@ public:
     ~ADC() override;
 
 public:
-    void capture(uint8_t*& data, size_t& size) override;
+    std::tuple<uint8_t*, size_t> capture() override;
 
     void captureAsync() override;
 

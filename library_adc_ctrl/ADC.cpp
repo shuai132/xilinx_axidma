@@ -15,7 +15,7 @@ ADC::ADC(uint32_t sampleNum)
     initAdc();
 }
 
-void ADC::capture(uint8_t*& data, size_t& size) {
+std::tuple<uint8_t*, size_t> ADC::capture() {
     assert(sampleNum_ != 0);
 
     LOGD("capture...");
@@ -26,8 +26,7 @@ void ADC::capture(uint8_t*& data, size_t& size) {
     errorIf(rc < 0);
     LOGD("capture data: size:%u", rxSize_);
 
-    data = rxBuf_;
-    size = rxSize_;
+    return std::make_tuple(rxBuf_, rxSize_);
 }
 
 void ADC::captureAsync() {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <tuple>
 
 namespace adc {
 
@@ -13,7 +14,7 @@ public:
     virtual ~IADC() = default;
 
 public:
-    virtual void capture(uint8_t*& data, size_t& size) = 0;
+    virtual std::tuple<uint8_t*, size_t> capture() = 0;
 
     virtual void captureAsync() = 0;
 

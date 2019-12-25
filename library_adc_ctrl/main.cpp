@@ -19,10 +19,8 @@ int main() {
     adc::ADC adc(32);
 
     LOGI("同步模式...");
-    uint8_t* data;
-    size_t size;
-    adc.capture(data, size);
-    printData(data, size);
+    auto res = adc.capture();
+    printData(std::get<0>(res), std::get<1>(res));
 
     LOGI("异步模式...");
     adc.setDataHandle([](uint8_t* data, size_t size) {
