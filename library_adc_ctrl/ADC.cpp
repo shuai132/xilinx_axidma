@@ -8,40 +8,50 @@
 #include "Exception.h"
 #include "log.h"
 
+#define FOR(i, n)   for(std::remove_reference<std::remove_const<typeof(n)>::type>::type i = 0; i < n; i++)
+
 namespace adc {
 
 ADC::ADC(uint32_t sampleNum)
-    : IADC(sampleNum) {
+    : IADC(sampleNum)
+    , adcCtrl0_(Dev::MASTER)
+    , adcCtrl1_(Dev::SLAVER1)
+    , adcCtrl2_(Dev::SLAVER2)
+    , adcCtrl3_(Dev::SLAVER3)
+    {
+    adcCtrl_[0] = &adcCtrl0_;
+    adcCtrl_[1] = &adcCtrl1_;
+    adcCtrl_[2] = &adcCtrl2_;
+    adcCtrl_[3] = &adcCtrl3_;
     initAdc();
 }
 
-std::tuple<uint8_t*, size_t> ADC::capture() {
+std::future<std::tuple<uint8_t*, size_t>> ADC::captureAsync(ADCNum_t adcNum) {
     assert(sampleNum_ != 0);
-
-    LOGD("capture...");
-    initAdc();
-    adcCtrl_.start(sampleNum_);
-    int rc = axidma_oneway_transfer(axidmaDev_, rxChannel_, rxBuf_, rxSize_, true);
-
-    errorIf(rc < 0);
-    LOGD("capture data: size:%u", rxSize_);
-
-    return std::make_tuple(rxBuf_, rxSize_);
-}
-
-void ADC::captureAsync() {
-    assert(sampleNum_ != 0);
+    assert(0 <= adcNum && adcNum < ADCNum);
 
     LOGD("captureAsync...");
     initAdc();
-    adcCtrl_.start(sampleNum_);
-    int rc = axidma_oneway_transfer(axidmaDev_, rxChannel_, rxBuf_, rxSize_, false);
+
+    auto userData = new UserData;
+    userData->adc = this;
+    userData->ch = adcNum;
+    userData_[adcNum].reset(userData);
+    LOGD("set cb: %p", userData);
+    axidma_set_callback(axidmaDev_, adcNum, axidma_callback, userData);
+
+    adcCtrl_[adcNum]->start(sampleNum_);
+    int rc = axidma_oneway_transfer(axidmaDev_, adcNum, rxBuf_[adcNum], rxSize_, false);
     errorIf(rc < 0);
+
+    return userData->promise.get_future();
 }
 
 ADC::~ADC() {
     if (axidmaDev_) {
-        axidma_stop_transfer(axidmaDev_, rxChannel_);
+        FOR(i, ADCNum) {
+            axidma_stop_transfer(axidmaDev_, i);
+        }
     }
     freeRes();
 }
@@ -55,24 +65,29 @@ void ADC::initAdc(bool force) {
     errorIf(axidmaDev_ == nullptr, "Failed to initialize the AXI DMA device");
 
     updateRxSize();
-    rxBuf_ = reinterpret_cast<uint8_t*>(axidma_malloc(axidmaDev_, rxSize_));
-    errorIf(rxBuf_ == nullptr, "Unable to allocate receive buffer from the AXI DMA device");
 
     const array_t *rxChans = axidma_get_dma_rx(axidmaDev_);
     LOGD("rxChans->len=%d", rxChans->len);
-    errorIf(rxChans->len < 1, "Error: No receive channels were found");
+    FOR(i, rxChans->len) {
+        LOGD("rxChans[%d]: %d", i, rxChans->data[i]);
+    }
+    errorIf(rxChans->len < 4, "Error: No receive channels were found");
 
-    rxChannel_ = rxChans->data[0];
-    LOGD("Using receive channel %d", rxChannel_);
-
-    axidma_set_callback(axidmaDev_, rxChannel_, axidma_callback, this);
+    FOR(i, ADCNum) {
+        auto rxBuf = reinterpret_cast<uint8_t*>(axidma_malloc(axidmaDev_, rxSize_));
+        errorIf(rxBuf == nullptr, "Unable to allocate receive buffer from the AXI DMA device");
+        rxBuf_[i] = rxBuf;
+        LOGD("rxBuf_[%d]:%p", i, rxBuf);
+    }
 
     initOk_ = true;
 }
 
 void ADC::freeRes() {
-    if (rxBuf_) {
-        axidma_free(axidmaDev_, rxBuf_, rxSize_);
+    for(const auto& buf : rxBuf_) {
+        if (buf) {
+            axidma_free(axidmaDev_, buf, rxSize_);
+        }
     }
 
     if (axidmaDev_) {
@@ -88,13 +103,21 @@ void ADC::errorIf(bool error, const std::string& errorMsg) {
 }
 
 void ADC::axidma_callback(int channel_id, void* user_data) {
-    LOGD("axidma_callback: channel_id:%d, user_data:%p", channel_id, user_data);
-    auto adc = reinterpret_cast<ADC*>(user_data);
+    LOGD("axidma_callback: ch:%d, user_data:%p", channel_id, user_data);
+    auto userData = reinterpret_cast<UserData*>(user_data);
 
+    const auto& ch = userData->ch;
+    auto* adc = userData->adc;
     auto& handle = adc->onDataHandle_;
+    auto data = adc->rxBuf_[ch];
+    auto size = adc->rxSize_;
+
+    assert(userData == adc->userData_[ch].get());
+
     if (handle) {
-        handle(adc->rxBuf_, adc->rxSize_);
+        handle(data, size, ch);
     }
+    userData->promise.set_value(std::make_tuple(data, size));
 }
 
 void ADC::setSampleNum(uint32_t sampleNum) {
@@ -104,6 +127,7 @@ void ADC::setSampleNum(uint32_t sampleNum) {
 }
 
 void ADC::updateRxSize() {
+    // 每个ADC有4个通道 每个通道2字节
     rxSize_ = sampleNum_ * 4 * 2;
 }
 

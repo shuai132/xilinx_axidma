@@ -9,10 +9,16 @@
 
 namespace adc {
 
-ADCCtrl::ADCCtrl() {
-    fd_ = open(ADC_DMA_DEV, O_RDONLY);
+const char* Dev::MASTER  = "/dev/adc0";
+const char* Dev::SLAVER1 = "/dev/adc1";
+const char* Dev::SLAVER2 = "/dev/adc2";
+const char* Dev::SLAVER3 = "/dev/adc3";
+
+ADCCtrl::ADCCtrl(const char* adcDev)
+    : adcDev_(adcDev){
+    fd_ = open(adcDev_, O_RDONLY);
     if (fd_ < 0) {
-        LOGE("open %s failed: %s", ADC_DMA_DEV, strerror(errno));
+        LOGE("open %s failed: %s", adcDev_, strerror(errno));
         throw_exception();
     }
 }

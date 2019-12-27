@@ -11,15 +11,19 @@ extern "C" {
 namespace adc {
 
 class ADC : noncopyable, public IADC {
+    struct UserData {
+        ADC* adc = nullptr;
+        int ch = -1;
+        std::promise<std::tuple<uint8_t*, size_t>> promise;
+    };
+
 public:
     explicit ADC(uint32_t sampleNum = 1);
 
     ~ADC() override;
 
 public:
-    std::tuple<uint8_t*, size_t> capture() override;
-
-    void captureAsync() override;
+    std::future<std::tuple<uint8_t*, size_t>> captureAsync(ADCNum_t adcNum) override ;
 
     void setSampleNum(uint32_t sampleNum) override;
 
@@ -37,13 +41,18 @@ private:
 private:
     uint32_t rxSize_ = 0;
 
-    int rxChannel_ = -1;
-    axidma_dev_t axidmaDev_ = nullptr;
-    uint8_t* rxBuf_ = nullptr;
+    axidma_dev_t axidmaDev_ = nullptr;  // 唯一
+    uint8_t* rxBuf_[4] = {};
 
-    ADCCtrl adcCtrl_;
+    ADCCtrl adcCtrl0_;
+    ADCCtrl adcCtrl1_;
+    ADCCtrl adcCtrl2_;
+    ADCCtrl adcCtrl3_;
+    ADCCtrl* adcCtrl_[ADCNum]{};
 
     bool initOk_ = false;
+
+    std::unique_ptr<UserData> userData_[ADCNum]; // 只用于防止内存泄漏 不直接使用
 };
 
 }

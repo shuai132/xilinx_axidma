@@ -6,6 +6,6 @@ add_custom_target(dirver_adc_capture
 
 # 为了IDE自动提示 添加一个target
 include_directories(../include)
-add_library(ignore_dirver_adc_capture
+add_library(ignore_dirver_adc_capture EXCLUDE_FROM_ALL
         axi_adc_dma.c
         )
